@@ -2,11 +2,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>net.nightpool.bukkit</groupId>
-	<version>3.0.0-dev</version>
-	<artifactId>xmasmiracle</artifactId>
+	<version>1.2.0</version>
+	<artifactId>xmasfun</artifactId>
 
-	<name>XmasMiracle</name>
-	<description>This is gonna be fun ;)</description>
+	<name>XmasFun</name>
+	<description>So beautiful</description>
 	<repositories>
 		<repository>
 			<id>bukkit</id>
