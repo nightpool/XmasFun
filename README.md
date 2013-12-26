@@ -4,7 +4,7 @@ XmasFun
 Add some christmas spirit to your server. This plugin affects blocks being sent to the client, causing them to be oh so Christmasy.
 
 
-[Screenshot](http://i.imgur.com/CoUGjJc)
+<img src="http://i.imgur.com/CoUGjJc.png" />
 
 
 Includes 4 different patterns, customizable per-user and with a configurable default for the whole server.
