@@ -1,7 +1,5 @@
 package net.nightpool.bukkit.miracle;
 
-import java.util.HashSet;
-import java.util.Set;
 
 import net.minecraft.server.Chunk;
 import net.minecraft.server.ChunkMap;
@@ -17,47 +15,63 @@ import net.minecraft.server.Packet53BlockChange;
 import net.minecraft.server.Packet56MapChunkBulk;
 import net.minecraft.server.PlayerConnection;
 import net.minecraft.server.World;
-
 import org.bukkit.Material;
 
 @SuppressWarnings("deprecation")
 public class MiracleConnection extends PlayerConnection {
 //    private final int updateRadius = 2;
+    enum Algo {
+        STRIPED_X("striped-x"),
+        STRIPED_Z("striped-z"),
+        STRIPED_Y("striped-y"),
+        TRUE_ALT("true");
+        
+        public final String name;
+        Algo(String s){
+            this.name = s;
+        }
+        public static Algo getByString(String string) {
+            try{
+                return valueOf(string);
+            } catch(IllegalArgumentException e){
+                
+            }
+            Algo a = null;
+            for(Algo i:values()){
+                if(i.name.equals(string)){
+                    a = i;
+                }
+            }
+            return a;
+        }
+    }
     public XmasMiraclePlugin pl;
     public static byte[] buildBuffer = new byte[196864];
     public boolean firstPacket = true;
-    static public Set<Integer> transparents = new HashSet<Integer>();
     public final static short red = (short) Material.REDSTONE_BLOCK.getId();
     public final static short green = (short) Material.EMERALD_BLOCK.getId();
-    static {
-        for (Material i : Material.values()) {
-            if (i.isTransparent()) {
-                if(i.equals(Material.LAVA)){continue;}
-                transparents.add(i.getId());
-            }
-        }
-    }
+    public Algo algo;
 
     public MiracleConnection(XmasMiraclePlugin p, MinecraftServer minecraftserver, INetworkManager networkmanager,
             EntityPlayer player) {
         super(minecraftserver, networkmanager, player);
         this.pl = p;
+        this.algo = p.default_algo;
+        if(p.algo_pref.containsKey(player.getName())){
+            this.algo = p.algo_pref.get(player.getName());
+        }
     }
 
     @Override
     public void sendPacket(Packet packet) {
         if (packet instanceof Packet51MapChunk) {
-//            pl.getLogger().info("51: Map Chunk");
-//            packet = new XmasPacket51(this, (Packet51MapChunk) packet);
+            packet = new XmasPacket51(this, (Packet51MapChunk) packet);
         } else if (packet instanceof Packet56MapChunkBulk) {
-//            pl.getLogger().info("56: Map Chunk Bulk");
-//            packet = new XmasPacket56(this, (Packet56MapChunkBulk) packet);
+            packet = new XmasPacket56(this, (Packet56MapChunkBulk) packet);
         } else if (packet instanceof Packet52MultiBlockChange){
-//            pl.getLogger().info("52: Multi Block Change");
             packet = new XmasPacket52(this, (Packet52MultiBlockChange) packet);
         } else if (packet instanceof Packet53BlockChange){
-//            pl.getLogger().info("53: Block Change");
-//            packet = new XmasPacket53(this, (Packet53BlockChange) packet);
+            packet = new XmasPacket53(this, (Packet53BlockChange) packet);
         }
         super.sendPacket(packet);
     }
@@ -144,7 +158,7 @@ public class MiracleConnection extends PlayerConnection {
 
     public boolean isBlockTransparent(World world, int x, int y, int z) {
         int blockType = world.getTypeId(x, y, z);
-        return transparents.contains(blockType);
+        return XmasMiraclePlugin.exceptions.contains(blockType);
     }
 
     public byte[] replaceCoveredBlocks(Chunk chunk, ChunkSection section) {
@@ -170,9 +184,9 @@ public class MiracleConnection extends PlayerConnection {
                         pl.getLogger().warning("Block type mismatch " + chunk.world.getTypeId(worldX, worldY, worldZ)
                                 + " vs " + type);
                     }
-                    if(transparents.contains(type))
+                    if(XmasMiraclePlugin.exceptions.contains(type))
                         continue;
-//                    blockData[y << 8 | z << 4 | x] = 1; // Set it to smooth stone
+                    blockData[y << 8 | z << 4 | x] = (byte) ((getNewBlock(worldX, worldY, worldZ, type, 0)>>4)&0xFFF); // Set it to smooth stone
                 }
             }
         }
@@ -180,8 +194,21 @@ public class MiracleConnection extends PlayerConnection {
     }
 
     public short getNewBlock(int x, int y, int z, int type, int data) {
-        if(transparents.contains(type))
-            return (short) ((type & 0xFFF) << 4 | data & 0xF);;
-        return (short)( ( ((y%1==0)? red:green) & 0xFFF) << 4 | data & 0xF);
+        if(XmasMiraclePlugin.exceptions.contains(type))
+            return (short) ((type & 0xFFF) << 4 | data & 0xF);
+        boolean t = false;
+        switch(this.algo){
+            case STRIPED_X:
+                t = (x%2==0) == (y%2==0); break;
+            case STRIPED_Z:
+                t = (z%2==0) == (y%2==0); break;
+            case STRIPED_Y:
+                t = (x%2==0) == (z%2==0); break;
+            case TRUE_ALT:
+                t = ((y%2==0) != ((z%2==0) == (x%2==0))); break;
+//            case PINHOLES:
+//                t = ((x%2==0) == (y%2==0)) && (z%2==0) == (y%2==0); break; 
+        }
+        return (short)(((t? red : green) & 0xFFF) << 4 | data & 0xF);
     }
 }

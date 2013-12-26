@@ -3,3 +3,6 @@ version: maven-version-number
 author: Nightpool
 description: This is gonna be fun ;)
 main: net.nightpool.bukkit.miracle.XmasMiraclePlugin
+commands:
+    xmas:
+        usage: /xmas [pattern]

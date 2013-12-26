@@ -13,7 +13,7 @@ public class XmasPacket53 extends Packet53BlockChange {
         try {
             Method m = Packet.class.getDeclaredMethod("a", int.class, boolean.class, boolean.class, Class.class);
             m.setAccessible(true);
-            m.invoke(null, 53+0xf00, true, true, XmasPacket53.class); // will never be sent over the wire, so it doesn't matter.
+            m.invoke(null, 53+0xf00, true, false, XmasPacket53.class); // will never be sent over the wire, so it doesn't matter.
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -23,7 +23,7 @@ public class XmasPacket53 extends Packet53BlockChange {
         try {
             Field id = Packet.class.getDeclaredField("packetID");
             id.setAccessible(true);
-            id.set(this, 51);
+            id.set(this, 53);
         } catch (Exception e1) {
             e1.printStackTrace();
         }
@@ -31,8 +31,9 @@ public class XmasPacket53 extends Packet53BlockChange {
         this.a = packet.a;
         this.b = packet.b;
         this.c = packet.c;
-        short blockdata = con.getNewBlock(a, b, c, this.material, this.data) ;
-        this.material = (blockdata>>4) & 0xFFF;
+        short blockdata = con.getNewBlock(a, b, c, packet.material, packet.data) ;
+//        con.pl.getLogger().info("type to send: "+this.material+" type sent: "+((blockdata>>4)&0xFFF));
+        this.material = (blockdata>>4)&0xFFF;
         this.data = blockdata&0xF;
     }
 }

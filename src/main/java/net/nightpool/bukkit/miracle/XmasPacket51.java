@@ -22,7 +22,7 @@ public class XmasPacket51 extends Packet51MapChunk {
         try {
             Method m = Packet.class.getDeclaredMethod("a", int.class, boolean.class, boolean.class, Class.class);
             m.setAccessible(true);
-            m.invoke(null, 51+0xf00, true, true, XmasPacket51.class); // will never be sent over the wire, so it doesn't matter.
+            m.invoke(null, 51+0xf00, true, false, XmasPacket51.class); // will never be sent over the wire, so it doesn't matter.
         } catch (Exception e){
             e.printStackTrace();
         }
