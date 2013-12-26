@@ -9,6 +9,8 @@ Add some christmas spirit to your server. This plugin affects blocks being sent 
 
 Includes 4 different patterns, customizable per-user and with a configurable default for the whole server.
 
+### [Download here](https://raw.github.com/nightpool/XmasFun/master/releases/xmasfun-1.2.0.jar)
+
 
 # Usage
 ### As a user
